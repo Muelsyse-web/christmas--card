@@ -1,0 +1,145 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Merry Christmas</title>
+    <style>
+        body, html {
+            margin: 0;
+            padding: 0;
+            width: 100%;
+            height: 100%;
+            background-color: #000;
+            overflow: hidden;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
+
+        .video-container {
+            position: relative;
+            width: 100%;
+            max-width: 1200px; /* 限制最大宽度，防止在大屏上太糊 */
+            /* 设定宽高比：根据你的原图，大约是 16:9 或更宽 */
+            aspect-ratio: 16 / 9; 
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
+
+        video {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            object-fit: contain; /* 保证视频画面完整显示，不被裁剪 */
+            opacity: 0;
+            transition: opacity 0.8s ease; /* 切换时的柔和淡入淡出 */
+            z-index: 1;
+        }
+
+        video.active {
+            opacity: 1;
+            z-index: 2;
+        }
+
+        /* --- 星星点击区域调整 --- */
+        .star-trigger {
+            position: absolute;
+            /* 根据原图估算的位置 */
+            top: 9%;   /* 距离顶部约 9% 的位置 */
+            left: 50%; /* 水平绝对居中 */
+            transform: translate(-50%, -50%); /* 修正中心点 */
+            
+            /* 点击区域大小，设置稍微大一点防止点不到 */
+            width: 12%; 
+            height: 15%; 
+            
+            z-index: 10;
+            cursor: pointer;
+            border-radius: 50%;
+            
+            /* 呼吸动画：提示这里可以点击 */
+            animation: pulse 2s infinite;
+        }
+        
+        /* 调试模式：如果你发现点不到，把下面这行 display: none 去掉 */
+        /* 就可以看到红色的圈，方便你微调位置 */
+        .debug-mode {
+            background-color: rgba(255, 0, 0, 0.3); 
+            /* display: none; */ 
+        }
+
+        .star-trigger.hidden {
+            display: none;
+        }
+
+        @keyframes pulse {
+            0% { box-shadow: 0 0 0 0 rgba(255, 223, 0, 0.4); } /* 金色光晕 */
+            70% { box-shadow: 0 0 0 15px rgba(255, 223, 0, 0); }
+            100% { box-shadow: 0 0 0 0 rgba(255, 223, 0, 0); }
+        }
+    </style>
+</head>
+<body>
+
+    <div class="video-container">
+        <video id="vid1" src="video1.mp4" loop muted playsinline preload="auto"></video>
+
+        <video id="vid2" src="video2.mp4" playsinline preload="auto"></video>
+
+        <video id="vid3" src="video3.mp4" loop playsinline preload="auto"></video>
+
+        <div id="starBtn" class="star-trigger"></div>
+    </div>
+
+    <audio id="bgm" src="music.mp3" loop preload="auto"></audio>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            const vid1 = document.getElementById('vid1');
+            const vid2 = document.getElementById('vid2');
+            const vid3 = document.getElementById('vid3');
+            const starBtn = document.getElementById('starBtn');
+            const bgm = document.getElementById('bgm');
+
+            // 初始化：播放第一个视频
+            vid1.classList.add('active');
+            // 尝试自动播放（静音状态下通常允许）
+            vid1.play().catch(e => console.log("等待用户交互"));
+
+            // 点击星星逻辑
+            starBtn.addEventListener('click', () => {
+                // 1. 隐藏按钮
+                starBtn.classList.add('hidden');
+
+                // 2. 播放音乐 (点击事件中允许播放声音)
+                bgm.play().catch(e => console.error("音乐播放失败:", e));
+                // 如果觉得音乐声音太大，可以设置音量 (0.0 - 1.0)
+                bgm.volume = 0.5; 
+
+                // 3. 切换到过渡视频
+                switchVideo(vid1, vid2);
+            });
+
+            // 过渡视频播放结束逻辑
+            vid2.addEventListener('ended', () => {
+                switchVideo(vid2, vid3);
+            });
+
+            function switchVideo(currentVideo, nextVideo) {
+                nextVideo.play();
+                nextVideo.classList.add('active');
+                
+                // 延迟移除上一段视频，让淡入淡出更平滑
+                setTimeout(() => {
+                    currentVideo.classList.remove('active');
+                    currentVideo.pause();
+                }, 800); // 这里的 800ms 要和 CSS 里的 transition 时间匹配
+            }
+        });
+    </script>
+</body>
+</html>
